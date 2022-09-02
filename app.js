@@ -1,51 +1,70 @@
-let displayOutput = document.querySelector(".movie-background");
-let formMovies = document.querySelector(".form-movies");
+let result = document.getElementById("result");
+let form = document.getElementById("form");
 let movieName = document.getElementById("movie-name");
-formMovies.addEventListener("submit", (e) => {
-  e.preventDefault();
-  let searchText = document.getElementById("movie-name").value;
-  fetch(`http://www.omdbapi.com/?t=` + searchText + `&apikey=${apiKey}`)
-    .then((response) => response.json())
-    .then((data) => {
-      let movieElement = document.createElement("div");
-      movieElement.classList.add("movie-styling");
-      displayOutput.appendChild(movieElement);
-      const icon = data.Poster;
-      let movieDetails;
-      movieDetails = `
-        <img src="${icon} class="poster-img">
-        <h1>${data.Title}</h1>
-        <span>
-        <p><b>Actors: </b>${data.Actors}</p>
-        <p><b>Genre: </b>${data.Genre}</p>
-        <p><b>Director: </b>${data.Director}</p>
-        <p><b>Language: </b>${data.Language}</p>
-        <p><b>Release Date: </b>${data.Released}</p>
-        <p><b>Duration: </b>${data.Runtime}</p>
-        <p><b>Rating: </b>${data.imdbRating}
-        <p><b>Story: </b>${data.Plot}
-        </span>
+function getMovies() {
+  let movieNameVal = movieName.value;
+  let url = `http://www.omdbapi.com/?t=${movieNameVal}&apikey=${apiKey}`;
+  if (movieNameVal.length <= 0) {
+    result.innerHTML = `<h3 class="msg">Please Enter A Movie or Series Name</h3>`;
+  } else {
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.Response == "True") {
+          result.innerHTML = `
+        <div class="movie-info">
+        <img src=${data.Poster} class="poster">
+        <div>
+          <h2 class="name">${data.Title}</h2>
+            <div class="rating">
+            <i class="fa-solid fa-star gold-star"></i>
+              <h4>${data.imdbRating}</h4>
+            </div>
+            <div class="details">
+                <span>${data.Rated}</span>
+                <span>${data.Year}</span>
+                <span>${data.Runtime}</span>
+            </div>
+            <div class="genre">
+                <div>${data.Genre.split(",").join("</div><div>")}</div>
+            </div>
+        </div>
+    </div>
+    <h3 class="extra-details">Plot:</h3>
+    <p class="details-text">${data.Plot}</p>
+    <h3 class="extra-details">Cast:</h3>
+    <p class="details-text">${data.Actors}</p>
+    <h3 class="extra-details">Director:</h3>
+    <p class="details-text">${data.Director}</p>
+    <h3 class="extra-details">Writers:</h3>
+    <p class="details-text">${data.Writer}</p>
+    <h3 class="extra-details">Language:</h3>
+    <p class="details-text">${data.Language}</p>
+    <h3 class="extra-details">Released:</h3>
+    <p class="details-text">${data.Released}</p>
+    <p class="recomendation"></p>
     `;
-      movieElement.innerHTML = movieDetails;
-      let recommendation = document.createElement("p");
-      recommendation.classList.add("recommend");
-      movieElement.appendChild(recommendation);
-      if (data.imdbRating >= "5.0") {
-        recommendation.innerHTML = "We recommend you to watch this movie.";
-        recommendation.style.color = "rgb(0, 166, 90)";
-      } else {
-        recommendation.innerHTML =
-          "We don't recommend you to watch this movie.";
-        recommendation.style.color = "red";
-      }
-      if (data.Response == "False") {
-        movieElement.remove();
-        alert("Not found!");
-        movieElement.innerHTML = "";
-      }
-      if (data.Type == "series") {
-        recommendation.innerHTML = "We recommend you to watch this series.";
-      }
-    });
-  document.getElementById("movie-name").value = "";
+        }
+        else {
+          result.innerHTML = `<h3 class='msg'>Not Found!</h3>`;
+        }
+        if(data.imdbRating >= 5.0) {
+          document.querySelector(".recomendation").innerHTML = "Recommended";
+          document.querySelector(".recomendation").style.color = "#759242";
+          document.querySelector(".recomendation").style.textAlign = "center";
+          document.querySelector(".recomendation").style.fontSize = "18px";
+        }
+        else {
+          document.querySelector(".recomendation").innerHTML = "Not Recommended";
+          document.querySelector(".recomendation").style.color = "#E45545";
+          document.querySelector(".recomendation").style.textAlign = "center";
+          document.querySelector(".recomendation").style.fontSize = "18px";
+        }
+   });
+  }
+}
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  getMovies();
+  movieName.value = "";
 });
